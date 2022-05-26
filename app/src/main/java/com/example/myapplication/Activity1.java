@@ -1,6 +1,21 @@
 package com.example.myapplication;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
+import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Environment;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageCapture;
@@ -13,24 +28,11 @@ import androidx.core.content.ContextCompat;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.common.util.concurrent.ListenableFuture;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-
-import android.annotation.SuppressLint;
-import android.graphics.drawable.Drawable;
-import android.net.Uri;
-import android.os.Bundle;
-import android.os.Environment;
-import android.util.Log;
-import android.view.View;
-import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.TextView;
-import android.widget.Toast;
-
-import com.google.common.util.concurrent.ListenableFuture;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
@@ -50,6 +52,7 @@ public class Activity1 extends AppCompatActivity implements View.OnClickListener
     private ImageView iConfidence;
     public Uri uploadedUri;
     public String storageLink;
+    private static final int CAMERA_REQUEST = 100;
 
     public void setUploadedUri(Uri uri){
         this.uploadedUri = uri;
@@ -59,15 +62,21 @@ public class Activity1 extends AppCompatActivity implements View.OnClickListener
         return this.uploadedUri;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_1);
 
+        if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.CAMERA}, CAMERA_REQUEST);
+        }
+
         previewView = findViewById(R.id.previewView);
         bCapture = findViewById(R.id.button_verify);
         tConfidence = findViewById(R.id.confidence);
         iConfidence = (ImageView)findViewById(R.id.image_verify);
+
         bCapture.setOnClickListener(this);
 
         cameraProviderFuture = ProcessCameraProvider.getInstance(this);
@@ -106,7 +115,19 @@ public class Activity1 extends AppCompatActivity implements View.OnClickListener
     @SuppressLint("RestrictedApi")
     @Override
     public void onClick(View view) {
+
+        if (bCapture.getText().toString().equals("TRY AGAIN")){
+            iConfidence.setImageResource(0);
+            iConfidence.setBackgroundColor(0);
+            tConfidence.setText(null);
+        }
+        else if(tConfidence.getText().equals("Face not detected"))
+        {
+            iConfidence.setImageResource(0);
+            iConfidence.setBackgroundColor(0);
+        }
         capturePhoto();
+
     }
 
 
@@ -195,31 +216,35 @@ public class Activity1 extends AppCompatActivity implements View.OnClickListener
     private void verify(String fileURL) {
         //now verify if they are the same person using face API
         FaceDetect face1 = new FaceDetect();
+        int c1 = getResources().getColor(R.color.green);
+        int c2 = getResources().getColor(R.color.red);
 
-        //int id1 = getResources().getIdentifier("com.example.myapplication:drawable/" + "tick.png", null, null);
-        //int id2 = getResources().getIdentifier("com.example.myapplication:drawable/" + "cross.png", null, null);
 
         if (fileURL != null) {
             Log.d("checking", "verifying the photo taken" + fileURL);
             String returnVal = face1.verify(fileURL);
+            Log.d("checking", "Return value from verify is: " + returnVal);
             if(returnVal.equals("true")) {
                 tConfidence.setText("Verified");
                 //iConfidence.setImageResource(id1);
                 iConfidence.setImageResource(R.drawable.tick);
+                iConfidence.setBackgroundColor(c1);
             }
             else if(returnVal.equals("false")) {
                 tConfidence.setText("Not Same Person");
+                bCapture.setText("TRY AGAIN");
                 //iConfidence.setImageResource(id2);
                 iConfidence.setImageResource(R.drawable.cross);
-
+                iConfidence.setBackgroundColor(c2);
             }
             else {
-                tConfidence.setText("Face not detected, try again");
+                tConfidence.setText(returnVal);
+                bCapture.setText("TRY AGAIN");
             }
         }
     }
 
-    private void uploadImageToFirebase(String name, Uri contentUri) {
+    /*private void uploadImageToFirebase(String name, Uri contentUri) {
         StorageReference storageRef = FirebaseStorage.getInstance().getReference();
         final StorageReference image = storageRef.child("pictures/" + name);
         image.putFile(contentUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
@@ -241,5 +266,16 @@ public class Activity1 extends AppCompatActivity implements View.OnClickListener
             }
         });
 
+    }*/
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == CAMERA_REQUEST) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "CameraX permission granted", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "CameraX permission denied", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 }

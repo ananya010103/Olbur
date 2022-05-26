@@ -81,6 +81,7 @@ class FaceDetect {
         String requestJson;
         String validFace = "false";
         String returnValue = "false";
+        boolean validResponse = false;
         HttpsURLConnection conn = null;
         boolean isIdentical;
         try {
@@ -124,21 +125,25 @@ class FaceDetect {
                         jsonReader.beginArray();
                         while (jsonReader.hasNext()) { // Loop through all keys
 
+                            validResponse = true;
                             //JSONObject jsonLine = new JSONObject(jsonReader.)
                             jsonReader.beginObject();
                             String key = jsonReader.nextName(); // Fetch the next key
-                            Log.d("Key: ", key);
+                            Log.d("Face Detect", "Key value is: " + key);
                             if (key.equals("faceId")) { // Check if desired key
                                 // Fetch the value as a String
                                 faceId = jsonReader.nextString();
                                 if (faceId != null) {
-                                    Log.d("Face Detect", "Face was recognised, id is: " + faceId);
+                                    Log.d("Face Detect", "Face was detected, id is: " + faceId);
                                     validFace = "true";
                                     break;
                                 }
-                            } else { // Error handling code goes here
-
                             }
+                        }
+                        if (!validResponse) {
+                            //when face not detected
+                            returnValue = "Face not detected";
+                            return returnValue;
                         }
                     }
                 }
@@ -149,8 +154,6 @@ class FaceDetect {
             }
 
             if (validFace.equals("true")) {
-                personId = "96352b4a-70f1-4b52-8522-edf9bac1b2ad";
-                personGrpId = "2";
 
                 try {
                     prepareConnection("verify");
@@ -162,7 +165,7 @@ class FaceDetect {
 
                 requestJson = "{" +
                         "\"faceId\"" + ":" + "\""+ faceId + "\"" + "," +
-                        "\"personId\"" + ":" + "\"93519625-e05a-4773-a763-ca8f66ee9a78\"" +"," +
+                        "\"personId\"" + ":" + "\"80c763bb-d096-4d75-ac72-e2482ec15e7b\"" +"," +
                         "\"personGroupId\"" + ":"+ "\"4\"" +
                         "}";
 
@@ -192,26 +195,26 @@ class FaceDetect {
                                     if (key.equals("isIdentical")) { // Check if desired key
                                         // Fetch the value as a String
                                         isIdentical = jsonReader.nextBoolean();
-                                        if (isIdentical==true)
+                                        if (isIdentical == true)
                                             returnValue = "true";
                                     } else if (key.equals("confidence")) { // Check if desired key
                                         // Fetch the value as a String
                                         confidenceLevel = jsonReader.nextDouble();
                                         break; // Break out of the loop
                                     } else { // Error handling code goes here
-
+                                        return "Incorrect input";
                                     }
                                 }
 
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
-                        } else {
-                            returnValue = "ERROR";
                         }
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
+                } else {
+                    returnValue = "ERROR";
                 }
             }
             return returnValue;
