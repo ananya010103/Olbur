@@ -77,11 +77,12 @@ class FaceDetect {
 
         String jsonInputString = "";
         String personGrpId, personId, faceId = "";
-        String isIdentical, confidenceLevel;
+        Double confidenceLevel;
         String requestJson;
         String validFace = "false";
         String returnValue = "false";
         HttpsURLConnection conn = null;
+        boolean isIdentical;
         try {
             prepareConnection("detect");
             conn = getAPIConnection();
@@ -161,7 +162,7 @@ class FaceDetect {
 
                 requestJson = "{" +
                         "\"faceId\"" + ":" + "\""+ faceId + "\"" + "," +
-                        "\"personId\"" + ":" + "\"96352b4a-70f1-4b52-8522-edf9bac1b2ad\"" +"," +
+                        "\"personId\"" + ":" + "\"93519625-e05a-4773-a763-ca8f66ee9a78\"" +"," +
                         "\"personGroupId\"" + ":"+ "\"4\"" +
                         "}";
 
@@ -174,44 +175,43 @@ class FaceDetect {
                     e.printStackTrace();
                 }
 
-                //read the response for the verify API
-                try {
-                    Log.d("Face Detect", "Response code from Verify API is: " + conn.getResponseCode());
-                    if (conn.getResponseCode() == 200) {
+                Log.d("Face Detect", "Response code from Verify API is: " + conn.getResponseCode());
+                if (conn.getResponseCode() == 200) {//read the response for the verify API
+                    try {
                         // Success
-                        JsonReader jsonReader = null;
-                        InputStream responseBody = conn.getInputStream();
-                        try (InputStreamReader responseBodyReader = new InputStreamReader(responseBody, "UTF-8")) {
-                            jsonReader = new JsonReader(responseBodyReader);
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-                        }
+                        InputStream in = conn.getInputStream();
+                        InputStreamReader responseBodyReader = new InputStreamReader(in, "UTF-8");
+                        if (responseBodyReader != null) {
+                            JsonReader jsonReader = new JsonReader(responseBodyReader);
 
-                        try {
-                            jsonReader.beginObject(); // Start processing the JSON object
-                            while (jsonReader.hasNext()) { // Loop through all keys
-                                String key = jsonReader.nextName(); // Fetch the next key
+                            try {
+                                jsonReader.beginObject(); // Start processing the JSON object
+                                while (jsonReader.hasNext()) { // Loop through all keys
+                                    String key = jsonReader.nextName(); // Fetch the next key
 
-                                if (key.equals("isIdentical")) { // Check if desired key
-                                    // Fetch the value as a String
-                                    isIdentical = jsonReader.nextString();
-                                    if (isIdentical.equals("true"))
-                                        returnValue = "true";
-                                } else if (key.equals("confidence")) { // Check if desired key
-                                    // Fetch the value as a String
-                                    confidenceLevel = jsonReader.nextString();
-                                    break; // Break out of the loop
-                                } else { // Error handling code goes here
+                                    if (key.equals("isIdentical")) { // Check if desired key
+                                        // Fetch the value as a String
+                                        isIdentical = jsonReader.nextBoolean();
+                                        if (isIdentical==true)
+                                            returnValue = "true";
+                                    } else if (key.equals("confidence")) { // Check if desired key
+                                        // Fetch the value as a String
+                                        confidenceLevel = jsonReader.nextDouble();
+                                        break; // Break out of the loop
+                                    } else { // Error handling code goes here
 
+                                    }
                                 }
-                            }
 
-                        } catch (IOException e) {
-                            e.printStackTrace();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        } else {
+                            returnValue = "ERROR";
                         }
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
                 }
             }
             return returnValue;

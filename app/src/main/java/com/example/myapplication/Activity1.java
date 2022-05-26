@@ -19,12 +19,14 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
 import android.annotation.SuppressLint;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -45,6 +47,7 @@ public class Activity1 extends AppCompatActivity implements View.OnClickListener
     private ImageCapture imageCapture;
     private Button bCapture;
     private TextView tConfidence;
+    private ImageView iConfidence;
     public Uri uploadedUri;
     public String storageLink;
 
@@ -64,6 +67,7 @@ public class Activity1 extends AppCompatActivity implements View.OnClickListener
         previewView = findViewById(R.id.previewView);
         bCapture = findViewById(R.id.button_verify);
         tConfidence = findViewById(R.id.confidence);
+        iConfidence = (ImageView)findViewById(R.id.image_verify);
         bCapture.setOnClickListener(this);
 
         cameraProviderFuture = ProcessCameraProvider.getInstance(this);
@@ -192,14 +196,22 @@ public class Activity1 extends AppCompatActivity implements View.OnClickListener
         //now verify if they are the same person using face API
         FaceDetect face1 = new FaceDetect();
 
+        //int id1 = getResources().getIdentifier("com.example.myapplication:drawable/" + "tick.png", null, null);
+        //int id2 = getResources().getIdentifier("com.example.myapplication:drawable/" + "cross.png", null, null);
+
         if (fileURL != null) {
             Log.d("checking", "verifying the photo taken" + fileURL);
             String returnVal = face1.verify(fileURL);
             if(returnVal.equals("true")) {
-                tConfidence.setText("Identical");
+                tConfidence.setText("Verified");
+                //iConfidence.setImageResource(id1);
+                iConfidence.setImageResource(R.drawable.tick);
             }
             else if(returnVal.equals("false")) {
-                tConfidence.setText("Not Identical");
+                tConfidence.setText("Not Same Person");
+                //iConfidence.setImageResource(id2);
+                iConfidence.setImageResource(R.drawable.cross);
+
             }
             else {
                 tConfidence.setText("Face not detected, try again");
