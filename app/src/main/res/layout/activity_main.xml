@@ -26,7 +26,7 @@
             android:layout_marginTop="100dp"
             android:text="@string/your_ride_has_arrived"
             android:textAlignment="center"
-            android:textSize="60dp"
+            android:textSize="60sp"
             tools:ignore="MissingConstraints" />
 
 

@@ -34,6 +34,7 @@ class FaceDetect {
         this.urlConn = urlConnection;
     }
 
+    //This method is to keep all common activities related to connection in a single place
     public void prepareConnection (String method) throws IOException{
         URL url = null;
         try {
@@ -92,29 +93,28 @@ class FaceDetect {
             ex.printStackTrace();
         }
 
-        //Set the request JSON body
+        //Set the request JSON body for detect API
         if (FireBaseUrl != null) {
             Log.d("checking", "Image URL that contains face:" + FireBaseUrl);
-        }
-        try (OutputStream os = conn.getOutputStream()) {
-            //set url from uploadeduri here
-            requestJson = "{" +
-                    "\"url\"" + ":\"" + FireBaseUrl + "\"" +
-                    "}";
-            Log.d("Face Detect", "JSON request is: " + requestJson);
-            byte[] input = requestJson.getBytes("utf-8");
-            os.write(input);
-            Log.d("Face Detect", input.toString());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
+            try (OutputStream os = conn.getOutputStream()) {//set url from uploadeduri here
+
+                //format for JSON is "url": "https://something.com/someplace/"
+                requestJson = "{" + "\"url\"" + ":\"" + FireBaseUrl + "\"" + "}";
+                Log.d("Face Detect", "JSON request is: " + requestJson);
+
+                byte[] input = requestJson.getBytes("utf-8");
+                os.write(input);
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
 
         //Read the response to detect API
         try {
             Log.d("Face Detect", "response code for detect is:" + conn.getResponseCode());
-            if (conn.getResponseCode() == 200) {
-                // Success
+            if (conn.getResponseCode() == 200) {// Success
                 try{
                     InputStream in = conn.getInputStream();
                     InputStreamReader responseBodyReader = new InputStreamReader(in, "UTF-8");
@@ -122,11 +122,10 @@ class FaceDetect {
                         JsonReader jsonReader = new JsonReader(responseBodyReader);
 
                         // Start processing the JSON object
+                        //Response to this API contains an array of objects
                         jsonReader.beginArray();
-                        while (jsonReader.hasNext()) { // Loop through all keys
-
-                            validResponse = true;
-                            //JSONObject jsonLine = new JSONObject(jsonReader.)
+                        while (jsonReader.hasNext()) { // Loop through all objects
+                            validResponse = true; //to confirm that this was not an empty response
                             jsonReader.beginObject();
                             String key = jsonReader.nextName(); // Fetch the next key
                             Log.d("Face Detect", "Key value is: " + key);
@@ -140,8 +139,7 @@ class FaceDetect {
                                 }
                             }
                         }
-                        if (!validResponse) {
-                            //when face not detected
+                        if (!validResponse) {//when face not detected, success code is 200 but returns an empty array
                             returnValue = "Face not detected";
                             return returnValue;
                         }
@@ -153,71 +151,68 @@ class FaceDetect {
                 conn.disconnect();
             }
 
-            if (validFace.equals("true")) {
+            //Verify API needs to be called only if a face was detected
+            try {
+                prepareConnection("verify");
+                conn = getAPIConnection();
+            }
+            catch(IOException ex){
+                ex.printStackTrace();
+            }
 
+            requestJson = "{" +
+                    "\"faceId\"" + ":" + "\""+ faceId + "\"" + "," +
+                    "\"personId\"" + ":" + "\"80c763bb-d096-4d75-ac72-e2482ec15e7b\"" +"," +
+                    "\"personGroupId\"" + ":"+ "\"4\"" +
+                    "}";
+
+            //Set the request JSON body
+            try (OutputStream os = conn.getOutputStream()) {
+                Log.d("Face Verify", "JSON request is: " + requestJson);
+                byte[] input = requestJson.getBytes("utf-8");
+                os.write(input);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            Log.d("Face Detect", "Response code from Verify API is: " + conn.getResponseCode());
+            if (conn.getResponseCode() == 200) {//read the response for the verify API
                 try {
-                    prepareConnection("verify");
-                    conn = getAPIConnection();
-                }
-                catch(IOException ex){
-                    ex.printStackTrace();
-                }
+                    // Success
+                    InputStream in = conn.getInputStream();
+                    InputStreamReader responseBodyReader = new InputStreamReader(in, "UTF-8");
+                    if (responseBodyReader != null) {
+                        JsonReader jsonReader = new JsonReader(responseBodyReader);
 
-                requestJson = "{" +
-                        "\"faceId\"" + ":" + "\""+ faceId + "\"" + "," +
-                        "\"personId\"" + ":" + "\"80c763bb-d096-4d75-ac72-e2482ec15e7b\"" +"," +
-                        "\"personGroupId\"" + ":"+ "\"4\"" +
-                        "}";
+                        try {
+                            jsonReader.beginObject(); // Start processing the JSON object
+                            while (jsonReader.hasNext()) { // Loop through all keys
+                                String key = jsonReader.nextName(); // Fetch the next key
 
-                //Set the request JSON body
-                try (OutputStream os = conn.getOutputStream()) {
-                    Log.d("Face Verify", "JSON request is: " + requestJson);
-                    byte[] input = requestJson.getBytes("utf-8");
-                    os.write(input);
+                                if (key.equals("isIdentical")) { // Check if desired key
+                                    // Fetch the value as a String
+                                    isIdentical = jsonReader.nextBoolean();
+                                    if (isIdentical == true)
+                                        returnValue = "true";
+                                } else if (key.equals("confidence")) { // Check if desired key
+                                    // Fetch the value as a String
+                                    confidenceLevel = jsonReader.nextDouble();
+                                    break; // Break out of the loop
+                                } else { // Error handling code goes here
+                                    return returnValue = "Invalid input";
+                                }
+                            }
+
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-
-                Log.d("Face Detect", "Response code from Verify API is: " + conn.getResponseCode());
-                if (conn.getResponseCode() == 200) {//read the response for the verify API
-                    try {
-                        // Success
-                        InputStream in = conn.getInputStream();
-                        InputStreamReader responseBodyReader = new InputStreamReader(in, "UTF-8");
-                        if (responseBodyReader != null) {
-                            JsonReader jsonReader = new JsonReader(responseBodyReader);
-
-                            try {
-                                jsonReader.beginObject(); // Start processing the JSON object
-                                while (jsonReader.hasNext()) { // Loop through all keys
-                                    String key = jsonReader.nextName(); // Fetch the next key
-
-                                    if (key.equals("isIdentical")) { // Check if desired key
-                                        // Fetch the value as a String
-                                        isIdentical = jsonReader.nextBoolean();
-                                        if (isIdentical == true)
-                                            returnValue = "true";
-                                    } else if (key.equals("confidence")) { // Check if desired key
-                                        // Fetch the value as a String
-                                        confidenceLevel = jsonReader.nextDouble();
-                                        break; // Break out of the loop
-                                    } else { // Error handling code goes here
-                                        return "Incorrect input";
-                                    }
-                                }
-
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                } else {
-                    returnValue = "ERROR";
-                }
+            } else {
+                return returnValue = "ERROR";
             }
-            return returnValue;
         }
         catch (IOException e){
             e.printStackTrace();

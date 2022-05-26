@@ -78,7 +78,6 @@ public class Activity1 extends AppCompatActivity implements View.OnClickListener
                 e.printStackTrace();
             }
         }, getExecutor());
-
     }
 
     Executor getExecutor() {
@@ -106,6 +105,7 @@ public class Activity1 extends AppCompatActivity implements View.OnClickListener
     @Override
     public void onClick(View view) {
 
+        //check the status of the earlier action on this button and clear labels and images, if any
         if (bCapture.getText().toString().equals("TRY AGAIN")){
             iConfidence.setImageResource(0);
             iConfidence.setBackgroundColor(0);
@@ -116,8 +116,9 @@ public class Activity1 extends AppCompatActivity implements View.OnClickListener
             iConfidence.setImageResource(0);
             iConfidence.setBackgroundColor(0);
         }
-        capturePhoto();
 
+        //Capture the photo and upload to Firebase for further use
+        capturePhoto();
     }
 
 
@@ -134,22 +135,17 @@ public class Activity1 extends AppCompatActivity implements View.OnClickListener
                             Toast.makeText(Activity1.this, "Photo has been saved successfully.", Toast.LENGTH_SHORT).show();
 
                             //now upload the file to Firebase
-                            //Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
                             Uri contentUri = Uri.fromFile(file);
-                            //mediaScanIntent.setData(contentUri);
                             FirebaseAuth mAuth = FirebaseAuth.getInstance();
 
-                            //sign-in anonymously
+                            //sign-in anonymously to Firebase
                             Task<AuthResult> task = mAuth.signInAnonymously();
                             task.addOnSuccessListener(authResult -> {
                                 // Sign in success, update UI with the signed-in user's information
                                 Log.d("checking", "signInAnonymously:success");
 
-                                //uploadImageToFirebase(file.getName(),contentUri);
-
                                 StorageReference storageRef = FirebaseStorage.getInstance().getReference();
                                 StorageReference imagesRef = storageRef.child("images");
-                                //StorageReference userRef = imagesRef.child(mAuth.getUid());
                                 String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
                                 String filename = mAuth.getUid() + "_" + timeStamp + ".jpg";
                                 Log.d("checking", "Filename" + filename + "is being uploaded to " + contentUri.getPath());
@@ -161,16 +157,20 @@ public class Activity1 extends AppCompatActivity implements View.OnClickListener
                                 }).addOnSuccessListener(taskSnapshot -> {
                                     uploadedUri = taskSnapshot.getUploadSessionUri();
 
-
                                     Log.d("checking", "encoded url is: " + uploadedUri.getEncodedPath());
                                     Log.d("checking", "Path from metadata is " + taskSnapshot.getMetadata().getPath());
-                                    //Log.d("checking", "Uploaded URL is: " + uploadedUri.getPath().toString());
                                     Toast.makeText(Activity1.this, "Photo has been uploaded successfully to Firebase", Toast.LENGTH_SHORT).show();
+
+                                    //No single method seemed to be available for accessing the file URL directly,
+                                    // hence building the same using various individuals components
                                     storageLink = "https://";
                                     storageLink += uploadedUri.getEncodedPath().substring(uploadedUri.getEncodedPath().indexOf('o'), uploadedUri.getEncodedPath().indexOf('m')+1);
                                     storageLink += ".storage.googleapis.com/";
                                     storageLink += taskSnapshot.getMetadata().getPath();
                                     Log.d("checking", "Final link of photo that needs verification is: " + storageLink);
+
+                                    //Azure Face API verify using the uploaded URI
+                                    // against existing faces added from persons
                                     verify(storageLink);
                                 });
 
@@ -178,18 +178,18 @@ public class Activity1 extends AppCompatActivity implements View.OnClickListener
                                     Log.w("checking", "signInAnonymously:failure", task.getException());
                                     Toast.makeText(Activity1.this, "Authentication failed.",
                                             Toast.LENGTH_SHORT).show();
-                                    //updateUI(null);
                                 });
                             });
                         }
 
                         @Override
                         public void onError(ImageCaptureException exception) {
-
+                            Log.e("checking", "Image could not be captured");
                         }
                     });
     }
 
+    @SuppressLint("SetTextI18n")
     private void verify(String fileURL) {
         //now verify if they are the same person using face API
         FaceDetect face1 = new FaceDetect();
@@ -201,25 +201,28 @@ public class Activity1 extends AppCompatActivity implements View.OnClickListener
             Log.d("checking", "verifying the photo taken" + fileURL);
             String returnVal = face1.verify(fileURL);
             Log.d("checking", "Return value from verify is: " + returnVal);
+
+            //set the labels in the UI correctly and appropriately
             if(returnVal.equals("true")) {
                 tConfidence.setText("Verified");
                 iConfidence.setImageResource(R.drawable.tick);
                 iConfidence.setBackgroundColor(c1);
             }
             else if(returnVal.equals("false")) {
-                tConfidence.setText("Not Same Person");
-                bCapture.setText("TRY AGAIN");
-                //iConfidence.setImageResource(id2);
+                tConfidence.setText(R.string.textview_verify);
+                bCapture.setText(R.string.button_verify);
+
                 iConfidence.setImageResource(R.drawable.cross);
                 iConfidence.setBackgroundColor(c2);
             }
             else {
                 tConfidence.setText(returnVal);
-                bCapture.setText("TRY AGAIN");
+                bCapture.setText(R.string.button_verify1);
             }
         }
     }
 
+    //This is to ensure that the application is to allow the user to take a picture
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);

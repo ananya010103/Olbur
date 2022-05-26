@@ -3,4 +3,7 @@
     <string name="verify">VERIFY</string>
     <string name="your_ride_has_arrived">Your Ride has Arrived!</string>
     <string name="next">NEXT</string>
+    <string name="textview_verify">Not Same Person</string>
+    <string name="button_verify">TRY AGAIN</string>
+    <string name="button_verify1">TRY AGAIN</string>
 </resources>

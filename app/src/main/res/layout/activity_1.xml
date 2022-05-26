@@ -78,7 +78,8 @@
                 android:id="@+id/image_verify"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_below="@+id/space3" />
+                android:layout_below="@+id/space3"
+                tools:ignore="ContentDescription" />
 
 
         </RelativeLayout>
