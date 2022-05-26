@@ -25,8 +25,6 @@ import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.view.PreviewView;
 import androidx.core.content.ContextCompat;
 
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.firebase.auth.AuthResult;
@@ -53,14 +51,6 @@ public class Activity1 extends AppCompatActivity implements View.OnClickListener
     public Uri uploadedUri;
     public String storageLink;
     private static final int CAMERA_REQUEST = 100;
-
-    public void setUploadedUri(Uri uri){
-        this.uploadedUri = uri;
-    }
-
-    public Uri getUploadedUri(){
-        return this.uploadedUri;
-    }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
@@ -151,58 +141,45 @@ public class Activity1 extends AppCompatActivity implements View.OnClickListener
 
                             //sign-in anonymously
                             Task<AuthResult> task = mAuth.signInAnonymously();
-                            task.addOnSuccessListener(new OnSuccessListener<AuthResult>() {
-                                @Override
-                                public void onSuccess(AuthResult authResult) {
-                                    // Sign in success, update UI with the signed-in user's information
-                                    Log.d("checking", "signInAnonymously:success");
+                            task.addOnSuccessListener(authResult -> {
+                                // Sign in success, update UI with the signed-in user's information
+                                Log.d("checking", "signInAnonymously:success");
 
-                                    //uploadImageToFirebase(file.getName(),contentUri);
+                                //uploadImageToFirebase(file.getName(),contentUri);
 
-                                    StorageReference storageRef = FirebaseStorage.getInstance().getReference();
-                                    StorageReference imagesRef = storageRef.child("images");
-                                    //StorageReference userRef = imagesRef.child(mAuth.getUid());
-                                    String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-                                    String filename = mAuth.getUid() + "_" + timeStamp + ".jpg";
-                                    Log.d("checking", "Filename" + filename + "is being uploaded to " + contentUri.getPath());
-                                    StorageReference fileRef = imagesRef.child(filename);
-                                    UploadTask uploadTask = fileRef.putFile(contentUri);
-                                    uploadTask.addOnFailureListener(new OnFailureListener() {
-                                        @Override
-                                        public void onFailure(@NonNull Exception exception) {
-                                            // Handle unsuccessful uploads
-                                            Toast.makeText(Activity1.this, "Error saving photo: " + exception.getMessage(), Toast.LENGTH_SHORT).show();
-                                        }
-
-                                    }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                                        @Override
-                                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                                            uploadedUri = taskSnapshot.getUploadSessionUri();
+                                StorageReference storageRef = FirebaseStorage.getInstance().getReference();
+                                StorageReference imagesRef = storageRef.child("images");
+                                //StorageReference userRef = imagesRef.child(mAuth.getUid());
+                                String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+                                String filename = mAuth.getUid() + "_" + timeStamp + ".jpg";
+                                Log.d("checking", "Filename" + filename + "is being uploaded to " + contentUri.getPath());
+                                StorageReference fileRef = imagesRef.child(filename);
+                                UploadTask uploadTask = fileRef.putFile(contentUri);
+                                uploadTask.addOnFailureListener(exception -> {
+                                    // Handle unsuccessful uploads
+                                    Toast.makeText(Activity1.this, "Error saving photo: " + exception.getMessage(), Toast.LENGTH_SHORT).show();
+                                }).addOnSuccessListener(taskSnapshot -> {
+                                    uploadedUri = taskSnapshot.getUploadSessionUri();
 
 
-                                            Log.d("checking", "encoded url is: " + uploadedUri.getEncodedPath());
-                                            Log.d("checking", "Path from metadata is " + taskSnapshot.getMetadata().getPath());
-                                            //Log.d("checking", "Uploaded URL is: " + uploadedUri.getPath().toString());
-                                            Toast.makeText(Activity1.this, "Photo has been uploaded successfully to Firebase", Toast.LENGTH_SHORT).show();
-                                            storageLink = "https://";
-                                            storageLink += uploadedUri.getEncodedPath().substring(uploadedUri.getEncodedPath().indexOf('o'), uploadedUri.getEncodedPath().indexOf('m')+1);
-                                            storageLink += ".storage.googleapis.com/";
-                                            storageLink += taskSnapshot.getMetadata().getPath();
-                                            Log.d("checking", "Final link of photo that needs verification is: " + storageLink);
-                                            verify(storageLink);
-                                        }
-                                    });
+                                    Log.d("checking", "encoded url is: " + uploadedUri.getEncodedPath());
+                                    Log.d("checking", "Path from metadata is " + taskSnapshot.getMetadata().getPath());
+                                    //Log.d("checking", "Uploaded URL is: " + uploadedUri.getPath().toString());
+                                    Toast.makeText(Activity1.this, "Photo has been uploaded successfully to Firebase", Toast.LENGTH_SHORT).show();
+                                    storageLink = "https://";
+                                    storageLink += uploadedUri.getEncodedPath().substring(uploadedUri.getEncodedPath().indexOf('o'), uploadedUri.getEncodedPath().indexOf('m')+1);
+                                    storageLink += ".storage.googleapis.com/";
+                                    storageLink += taskSnapshot.getMetadata().getPath();
+                                    Log.d("checking", "Final link of photo that needs verification is: " + storageLink);
+                                    verify(storageLink);
+                                });
 
-                                    task.addOnFailureListener(new OnFailureListener() {
-                                        @Override
-                                        public void onFailure(@NonNull Exception e) {
-                                            Log.w("checking", "signInAnonymously:failure", task.getException());
-                                            Toast.makeText(Activity1.this, "Authentication failed.",
-                                                    Toast.LENGTH_SHORT).show();
-                                            //updateUI(null);
-                                        }
-                                    });
-                                }
+                                task.addOnFailureListener(e -> {
+                                    Log.w("checking", "signInAnonymously:failure", task.getException());
+                                    Toast.makeText(Activity1.this, "Authentication failed.",
+                                            Toast.LENGTH_SHORT).show();
+                                    //updateUI(null);
+                                });
                             });
                         }
 
@@ -226,7 +203,6 @@ public class Activity1 extends AppCompatActivity implements View.OnClickListener
             Log.d("checking", "Return value from verify is: " + returnVal);
             if(returnVal.equals("true")) {
                 tConfidence.setText("Verified");
-                //iConfidence.setImageResource(id1);
                 iConfidence.setImageResource(R.drawable.tick);
                 iConfidence.setBackgroundColor(c1);
             }
@@ -244,29 +220,6 @@ public class Activity1 extends AppCompatActivity implements View.OnClickListener
         }
     }
 
-    /*private void uploadImageToFirebase(String name, Uri contentUri) {
-        StorageReference storageRef = FirebaseStorage.getInstance().getReference();
-        final StorageReference image = storageRef.child("pictures/" + name);
-        image.putFile(contentUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                image.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                    @Override
-                    public void onSuccess(Uri uri) {
-                        Log.d("tag", "onSuccess: Uploaded Image URl is " + uri.toString());
-                    }
-                });
-
-                Toast.makeText(Activity1.this, "Image Is Uploaded.", Toast.LENGTH_SHORT).show();
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Toast.makeText(Activity1.this, "Upload Failed.", Toast.LENGTH_SHORT).show();
-            }
-        });
-
-    }*/
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
