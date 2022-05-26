@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "419078635513",
+    "project_id": "olbur-d1df7",
+    "storage_bucket": "olbur-d1df7.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:419078635513:android:da844bc91c9e6a32804728",
+        "android_client_info": {
+          "package_name": "com.example.myapplication"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "419078635513-o71ibe0bvt61114enbtnm2ki7upgi6ma.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyApN41XAcmbpnXp1Big8w09_ISTj2gVgP4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "419078635513-o71ibe0bvt61114enbtnm2ki7upgi6ma.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
