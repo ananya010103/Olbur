@@ -19,6 +19,9 @@ import android.util.JsonReader;
 import android.util.Log;
 import android.util.MalformedJsonException;
 
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -196,6 +199,7 @@ class FaceDetect {
                                         returnValue = "true";
                                 } else if (key.equals("confidence")) { // Check if desired key
                                     // Fetch the value as a String
+
                                     confidenceLevel = jsonReader.nextDouble();
                                     break; // Break out of the loop
                                 } else { // Error handling code goes here
