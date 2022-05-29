@@ -1,0 +1,288 @@
+{
+	"info": {
+		"_postman_id": "447357d2-6472-4021-867e-3cd5fdbeb6cf",
+		"name": "Azure Face Recognition",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "21072837"
+	},
+	"item": [
+		{
+			"name": "Create PersonGroup",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Ocp-Apim-Subscription-Key",
+						"value": "7ca6a1b2734245088c4a27f6b9deb1f3",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\":\"driver_database\",\n    \"recognitionModel\": \"recognition_03\"\n}"
+				},
+				"url": {
+					"raw": "https://centralindia.api.cognitive.microsoft.com/face/v1.0/persongroups/2",
+					"protocol": "https",
+					"host": [
+						"centralindia",
+						"api",
+						"cognitive",
+						"microsoft",
+						"com"
+					],
+					"path": [
+						"face",
+						"v1.0",
+						"persongroups",
+						"2"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Person from PersonGroup",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {
+					"content-type": true
+				}
+			},
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Ocp-Apim-Subscription-Key",
+						"value": "7ca6a1b2734245088c4a27f6b9deb1f3",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/octet-stream",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "file",
+					"file": {
+						"src": ""
+					}
+				},
+				"url": {
+					"raw": "https://centralindia.api.cognitive.microsoft.com/face/v1.0/persongroups/4/persons",
+					"protocol": "https",
+					"host": [
+						"centralindia",
+						"api",
+						"cognitive",
+						"microsoft",
+						"com"
+					],
+					"path": [
+						"face",
+						"v1.0",
+						"persongroups",
+						"4",
+						"persons"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "add face",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Ocp-Apim-Subscription-Key",
+						"value": "7ca6a1b2734245088c4a27f6b9deb1f3",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/octet-stream",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "file",
+					"file": {
+						"src": "/home/ramki/Downloads/WhatsApp Image 2022-05-15 at 12.18.55 PM.jpeg"
+					}
+				},
+				"url": {
+					"raw": "https://centralindia.api.cognitive.microsoft.com/face/v1.0/persongroups/1/persons/96352b4a-70f1-4b52-8522-edf9bac1b2ad/persistedFaces",
+					"protocol": "https",
+					"host": [
+						"centralindia",
+						"api",
+						"cognitive",
+						"microsoft",
+						"com"
+					],
+					"path": [
+						"face",
+						"v1.0",
+						"persongroups",
+						"1",
+						"persons",
+						"96352b4a-70f1-4b52-8522-edf9bac1b2ad",
+						"persistedFaces"
+					]
+				},
+				"description": "Face API to create a person"
+			},
+			"response": []
+		},
+		{
+			"name": "detect_from_url",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Ocp-Apim-Subscription-Key",
+						"value": "7ca6a1b2734245088c4a27f6b9deb1f3",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"url\":\"https://static.wixstatic.com/media/eb926c_e0d2b68d33184f1b8649da23a16675d0~mv2.jpg/v1/fill/w_379,h_460,fp_0.57_0.44,q_80,usm_0.66_1.00_0.01,enc_auto/eb926c_e0d2b68d33184f1b8649da23a16675d0~mv2.jpg\"\n}"
+				},
+				"url": {
+					"raw": "https://centralindia.api.cognitive.microsoft.com/face/v1.0/detect",
+					"protocol": "https",
+					"host": [
+						"centralindia",
+						"api",
+						"cognitive",
+						"microsoft",
+						"com"
+					],
+					"path": [
+						"face",
+						"v1.0",
+						"detect"
+					]
+				},
+				"description": "Face API to create a person"
+			},
+			"response": []
+		},
+		{
+			"name": "verify",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Ocp-Apim-Subscription-Key",
+						"value": "7ca6a1b2734245088c4a27f6b9deb1f3",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"faceId\": \"8c9539d4-0370-4a6a-8d66-4190661fa113\",\n    \"personId\": \"93519625-e05a-4773-a763-ca8f66ee9a78\",\n    \"personGroupId\": \"4\"\n}\n"
+				},
+				"url": {
+					"raw": "https://centralindia.api.cognitive.microsoft.com/face/v1.0/verify",
+					"protocol": "https",
+					"host": [
+						"centralindia",
+						"api",
+						"cognitive",
+						"microsoft",
+						"com"
+					],
+					"path": [
+						"face",
+						"v1.0",
+						"verify"
+					]
+				},
+				"description": "Face API to create a person"
+			},
+			"response": []
+		},
+		{
+			"name": "detect_from_persisted",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Ocp-Apim-Subscription-Key",
+						"value": "7ca6a1b2734245088c4a27f6b9deb1f3",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/octet-stream",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "https://centralindia.api.cognitive.microsoft.com/face/v1.0/detect",
+					"protocol": "https",
+					"host": [
+						"centralindia",
+						"api",
+						"cognitive",
+						"microsoft",
+						"com"
+					],
+					"path": [
+						"face",
+						"v1.0",
+						"detect"
+					]
+				},
+				"description": "Face API to create a person"
+			},
+			"response": []
+		}
+	]
+}
