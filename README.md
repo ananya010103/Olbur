@@ -39,9 +39,10 @@ Installation:
 
 Creation of master data:
 ------------------------
-1. Create person groups and persons using Postman
-2. Upload the corresponding photo for every person also using Postman
-3. Modify the database.json file under Assets folder to add the ID, Name and public URL which contains the photograph
+1. Create person groups, persons and add face for that person using Postman
+2. Upload the corresponding master photo for every person also using Postman
+3. Currently, the application is configured to work for a given ID. Replace personID in verify method of face_api.java to match against other people
+4. Modify the database.json file under Assets folder to add the ID, Name and public URL which contains the photograph 
 
 Features of the application:
 ----------------------------
