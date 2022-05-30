@@ -1,5 +1,6 @@
 package com.example.myapplication;
 
+import android.app.Activity;
 import android.util.Log;
 import androidx.annotation.NonNull;
 
@@ -32,11 +33,11 @@ import java.util.Random;
 public class DatabaseConnector {
     private DatabaseReference driverDB;
     private DatabaseReference connectedRef;
-    MainActivity fromActivity;
-    String names[];
+    Activity fromActivity;
     int i=0;
-    List<Driver> drivers;
-
+    ArrayList<Driver> drivers=null;
+    Driver[] driverList = null;
+    String driverNames[] = null;
     /*
     public interface DataStatus{
         void DataIsLoaded(List<Driver> drivers, List<String> keys);
@@ -46,7 +47,7 @@ public class DatabaseConnector {
     }
     */
 
-    DatabaseConnector(MainActivity activity) {
+    DatabaseConnector(Activity activity) {
 
         fromActivity = activity;
 
@@ -78,13 +79,50 @@ public class DatabaseConnector {
         return results;
     }
 
-    public String[] getDriverNames(String jsonFileString) {
+    public String getDriverIdFromName(String jsonFileString, String driverName){
+        Log.i("JSON content: ", jsonFileString);
+        Gson gson = new GsonBuilder().create();
+
+        Type DriverType = new TypeToken<ArrayList<Driver>>() {}.getType();
+        drivers = gson.fromJson(jsonFileString, DriverType);
+        Log.d("Database", "Number of drivers in the database" + drivers.size());
+        driverNames = new String[drivers.size()];
+        for (int count=0; count<drivers.size(); count++) {
+            Driver driver = (Driver) drivers.get(count);
+            if ((driver != null) && driver.getDriver_name().equals(driverName)) {
+                Log.d("Database", "Driver id for " + driver.getDriver_name() + "is " + driver.getDriver_id());
+                return driver.getDriver_id();
+            }
+        }
+        return "";
+    }
+
+    public Driver[] getDriverDetails(String jsonFileString) {
+        int i = 0;
+        Log.i("JSON content: ", jsonFileString);
+        Gson gson = new GsonBuilder().create();
+
+        Type DriverType = new TypeToken<ArrayList<Driver>>() {}.getType();
+        drivers = gson.fromJson(jsonFileString, DriverType);
+        driverList = new Driver[drivers.size()];
+        Log.d("Database", "Number of drivers in the database" + drivers.size());
+        for (int count = 0; count < drivers.size(); count++) {
+            Driver driver = (Driver) drivers.get(count);
+            driverList[count] = driver;
+            Log.d("Database", "Driver name is " + driver.getDriver_name());
+        }
+        return driverList;
+    }
+
+
+        /*
+        public String[] getDriverNames(String jsonFileString) {
         int i=0;
         Log.i("JSON content: ", jsonFileString);
         Gson gson = new GsonBuilder().create();
 
         Type DriverType = new TypeToken<ArrayList<Driver>>() {}.getType();
-        ArrayList<Driver> drivers = gson.fromJson(jsonFileString, DriverType);
+        drivers = gson.fromJson(jsonFileString, DriverType);
         Log.d("Database", "Number of drivers in the database" + drivers.size());
         names = new String[drivers.size()];
         for (int count=0; count<drivers.size(); count++) {
@@ -133,10 +171,10 @@ public class DatabaseConnector {
                 }
             }
         });
-        */
-        return names;
-    }
 
+        return names;
+      }
+      */
 };
 
 

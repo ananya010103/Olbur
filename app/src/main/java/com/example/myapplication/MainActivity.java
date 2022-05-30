@@ -17,6 +17,8 @@ import java.util.Random.*;
 public class MainActivity extends AppCompatActivity{
     Button button_nxt;
     TextView ride_name;
+    static String driverName;
+    static String personId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,16 +34,22 @@ public class MainActivity extends AppCompatActivity{
 
         DatabaseConnector db = new DatabaseConnector(MainActivity.this);
         String result = db.init();
-        String names[] = db.getDriverNames(result);
-        if (names != null){
-            int allocated_driver= (int)(Math.random()*(names.length-1));
-            ride_name.setText("Driver Name is: "+ names[allocated_driver]);
-            Log.d("checking", "Your allocated driver is " + names[allocated_driver]);
+
+        Driver drivers[] = db.getDriverDetails(result);
+        if (drivers != null){
+            int allocated_driver= (int)(Math.random()*(drivers.length));
+            ride_name.setText("Driver Name is: "+ drivers[allocated_driver].getDriver_name());
+            driverName = drivers[allocated_driver].getDriver_name();
+            personId = drivers[allocated_driver].getDriver_id();
+            Log.d("checking", "Your allocated driver is " + driverName);
         }
     }
 
     public void openNewActivity(){
         Intent intent = new Intent(this, Activity1.class);
+        intent.putExtra("Allocated Driver",driverName);
+        intent.putExtra("Driver id",personId);
+
         startActivity(intent);
         finish();
     }

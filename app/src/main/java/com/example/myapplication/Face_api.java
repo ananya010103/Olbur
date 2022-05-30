@@ -14,6 +14,9 @@ import java.net.URL;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.util.JsonReader;
 import android.util.Log;
@@ -73,14 +76,14 @@ class FaceDetect {
         setAPIConnection(urlConnection);
     }
 
-    public String verify(String FireBaseUrl) {
+    public String verify(String FireBaseUrl, String DriverID) {
         //Input needs in the form of name, value pairs
         //    "faceId": "8c9539d4-0370-4a6a-8d66-4190661fa113",
         //    "personId": "93519625-e05a-4773-a763-ca8f66ee9a78",
         //    "personGroupId": "4"
 
         String jsonInputString = "";
-        String personGrpId, personId, faceId = "";
+        String personGrpId, personId="", faceId = "";
         Double confidenceLevel;
         String requestJson;
         String validFace = "false";
@@ -163,9 +166,11 @@ class FaceDetect {
                 ex.printStackTrace();
             }
 
+
             requestJson = "{" +
                     "\"faceId\"" + ":" + "\""+ faceId + "\"" + "," +
-                    "\"personId\"" + ":" + "\"80c763bb-d096-4d75-ac72-e2482ec15e7b\"" +"," +
+                    "\"personId\"" + ":" + "\"" + DriverID + "\"" +"," +
+                    //"\"personId\"" + ":" + "\"80c763bb-d096-4d75-ac72-e2482ec15e7b\"" +"," +
                     "\"personGroupId\"" + ":"+ "\"4\"" +
                     "}";
 
@@ -201,6 +206,7 @@ class FaceDetect {
                                     // Fetch the value as a String
 
                                     confidenceLevel = jsonReader.nextDouble();
+                                    Log.d("checking", "Confidence level of face match is " + confidenceLevel);
                                     break; // Break out of the loop
                                 } else { // Error handling code goes here
                                     return returnValue = "Invalid input";

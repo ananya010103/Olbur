@@ -1,17 +1,13 @@
 package com.example.myapplication;
 
-import static java.lang.StrictMath.random;
-
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -19,13 +15,11 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.content.Context;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.camera.core.Camera;
-import androidx.camera.core.CameraControl;
 import androidx.camera.core.CameraInfo;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageCapture;
@@ -36,11 +30,9 @@ import androidx.camera.view.PreviewView;
 import androidx.core.content.ContextCompat;
 
 import com.google.android.gms.tasks.Task;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -49,13 +41,9 @@ import com.google.firebase.storage.UploadTask;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.logging.Handler;
-import java.util.logging.LogRecord;
+
 
 public class Activity1 extends AppCompatActivity implements View.OnClickListener{
 
@@ -63,7 +51,7 @@ public class Activity1 extends AppCompatActivity implements View.OnClickListener
 
     PreviewView previewView;
     ImageCapture imageCapture;
-    FloatingActionButton floatingActionButton;
+
     private Button bCapture;
     private Button bReport;
     private Button bContinue;
@@ -73,7 +61,7 @@ public class Activity1 extends AppCompatActivity implements View.OnClickListener
     private ProgressBar bLoading;
     public Uri uploadedUri;
     public String storageLink;
-
+    public String person_Id;
 
     private static final int CAMERA_REQUEST = 100;
 
@@ -83,15 +71,15 @@ public class Activity1 extends AppCompatActivity implements View.OnClickListener
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_1);
 
+        Bundle extras = getIntent().getExtras();
+        person_Id = extras.getString("Driver id");
+
         if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.CAMERA}, CAMERA_REQUEST);
         }
 
         //This was tried as a possible solution to the Firebase error
         FirebaseDatabase.getInstance().setPersistenceEnabled(true);
-
-        // Initially the solution was implemented with Firebase realtime database
-        // Solution did not work due to unknown error as documented in DatabaseConnector implementation
 
         previewView = findViewById(R.id.previewView);
         bCapture = findViewById(R.id.button_verify);
@@ -135,22 +123,17 @@ public class Activity1 extends AppCompatActivity implements View.OnClickListener
         imageCapture = new ImageCapture.Builder()
                 .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
                 .build();
+
         //Torchlight use case
         Camera cam = cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageCapture);
         final CameraInfo cameraInfo = cam.getCameraInfo();
-        //final CameraControl cameraControl = cam.getCameraControl();
+
     }
 
 
     @SuppressLint("RestrictedApi")
     @Override
     public void onClick(View view) {
-
-
-        /*
-        Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
-        */
                 //check the status of the earlier action on this button and clear labels and images, if any
                 if (bCapture.getText().toString().equals("TRY AGAIN")) {
                     iConfidence.setImageResource(0);
@@ -163,22 +146,22 @@ public class Activity1 extends AppCompatActivity implements View.OnClickListener
 
                 //Capture the photo and upload to Firebase for further use
                 capturePhoto();
-        bContinue.setOnClickListener(v -> openNewActivity2());
-        bReport.setOnClickListener(v -> openNewActivity3());
+                bContinue.setOnClickListener(v -> openNewActivity2());
+                bReport.setOnClickListener(v -> openNewActivity3());
 
                 //switch off flashlight
 
         }
 
     private void openNewActivity3() {
-        Intent intent = new Intent(this, Activity3.class);
-        startActivity(intent);
+        Intent i = new Intent(this, Activity3.class);
+        startActivity(i);
         finish();
     }
 
     private void openNewActivity2() {
-        Intent intent = new Intent(this, Activity2.class);
-        startActivity(intent);
+        Intent i = new Intent(this, Activity2.class);
+        startActivity(i);
         finish();
     }
 
@@ -260,7 +243,8 @@ public class Activity1 extends AppCompatActivity implements View.OnClickListener
 
         if (fileURL != null) {
             Log.d("checking", "verifying the photo taken" + fileURL);
-            String returnVal = face1.verify(fileURL);
+
+            String returnVal = face1.verify(fileURL, person_Id);
             Log.d("checking", "Return value from verify is: " + returnVal);
             bLoading.setVisibility(View.GONE);
 
@@ -269,10 +253,6 @@ public class Activity1 extends AppCompatActivity implements View.OnClickListener
                 tConfidence.setText("Verified");
                 iConfidence.setImageResource(R.drawable.tick);
                 iConfidence.setBackgroundColor(c1);
-
-
-
-
             }
             else if(returnVal.equals("false")) {
                 tConfidence.setText(R.string.textview_verify);
@@ -280,8 +260,6 @@ public class Activity1 extends AppCompatActivity implements View.OnClickListener
 
                 iConfidence.setImageResource(R.drawable.cross);
                 iConfidence.setBackgroundColor(c2);
-
-
             }
             else {
                 tConfidence.setText(returnVal);
@@ -302,6 +280,4 @@ public class Activity1 extends AppCompatActivity implements View.OnClickListener
             }
         }
     }
-
-
 }
