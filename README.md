@@ -39,9 +39,9 @@ Installation:
 
 Creation of master data:
 ------------------------
-1. Create person groups and persons using Postman
-2. Upload the corresponding photo for every person also using Postman
-3. Modify the database.json file under Assets folder to add the ID, Name and public URL which contains the photograph
+1. Create person groups, persons and add face for that person using Postman (as per Azure Face API 1.0 docs)
+2. Upload the corresponding master photo for every person also using Postman
+3. Modify the database.json file under Assets folder to add the ID, Name and vehicle number 
 
 Features of the application:
 ----------------------------
